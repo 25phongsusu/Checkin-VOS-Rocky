@@ -76,16 +76,17 @@ function doPost(e) {
         return jsonResponse({ error: 'Vui lòng nhập số điện thoại Việt Nam hợp lệ (10 số, bắt đầu bằng 03, 05, 07, 08, 09).' }, 400);
       }
 
-      // Kiểm tra trùng lặp số điện thoại trong Cột C (Số điện thoại)
-      const dataRange = sheet.getDataRange();
-      const values = dataRange.getValues();
-      
-      for (let i = 1; i < values.length; i++) {
-        const existingPhone = String(values[i][2] || '').trim().replace(/[\s().-]/g, '').replace(/^'/, '').replace(/^\+84/, '0').replace(/^84(?=\d{9}$)/, '0');
-        if (existingPhone === rawPhone) {
-          return jsonResponse({
-            error: 'Số điện thoại này đã đăng ký. Vui lòng đến nhân sự tại booth để kiểm tra và nhận quà; không cần gửi lại form.'
-          }, 409);
+      // Kiểm tra trùng lặp số điện thoại trong Cột C (Số điện thoại) - TỐI ƯU TỐC ĐỘ ĐỌC 1 CỘT
+      const lastRow = sheet.getLastRow();
+      if (lastRow > 1) {
+        const phoneValues = sheet.getRange(2, 3, lastRow - 1, 1).getValues();
+        for (let i = 0; i < phoneValues.length; i++) {
+          const existingPhone = String(phoneValues[i][0] || '').trim().replace(/[\s().-]/g, '').replace(/^'/, '').replace(/^\+84/, '0').replace(/^84(?=\d{9}$)/, '0');
+          if (existingPhone === rawPhone) {
+            return jsonResponse({
+              error: 'Số điện thoại này đã đăng ký. Vui lòng đến nhân sự tại booth để kiểm tra và nhận quà; không cần gửi lại form.'
+            }, 409);
+          }
         }
       }
 
@@ -163,16 +164,18 @@ function doPost(e) {
 
 function handleRecords() {
   const sheet = getTargetSheet();
-  const values = sheet.getDataRange().getValues();
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return jsonResponse([]);
+  const values = sheet.getRange(2, 1, lastRow - 1, 7).getValues();
   const records = [];
 
-  for (let i = 1; i < values.length; i++) {
+  for (let i = 0; i < values.length; i++) {
     const row = values[i];
     if (!row[1] && !row[2]) continue; // Bỏ qua hàng trống
     const phoneClean = String(row[2] || '').trim().replace(/^'/, '');
     const isClaimed = !!(row[5] && String(row[5]).trim() !== '');
     records.push({
-      id: i + 1, // Vị trí hàng trong sheet để cập nhật
+      id: i + 2, // Vị trí hàng thực tế trong sheet (bắt đầu từ hàng 2)
       created_at: row[0],
       name: row[1],
       phone: phoneClean,
