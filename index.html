@@ -19,7 +19,7 @@ body{background:#eef5f3;color:#173e42}header{padding:23px 40px}.brand b{font-siz
 <section class="share-moment"><span class="share-icon" aria-hidden="true">♡</span><div><h3>Có bạn trong khung hình, Rocky vui hơn! 📸</h3><p>Nếu thấy vui khi ghé booth, bạn hãy chia sẻ một tấm hình hay khoảnh khắc cùng Rocky lên Facebook nhé. Rocko rất mong được xuất hiện cùng bạn đó!</p><small>Chia sẻ là tùy chọn, không bắt buộc và không ảnh hưởng đến quyền nhận quà.</small></div></section><section class="how"><h3>Check-in thật dễ.<br>Nhận quà thật vui!</h3><article><b><i>01</i> Ghé booth, điền form</b>Đến trực tiếp gian hàng Rocky và hoàn tất họ tên, số điện thoại trên form.</article><article><b><i>02</i> Like Rocky, thêm kết nối</b>Like fanpage Rocky. Khách đã like từ trước vẫn có thể tham gia.</article><article><b><i>03</i> Xác nhận xong, chọn quà</b>Xuất trình màn hình đã like và xác nhận gửi form. Nhân sự kiểm tra và trao quà trực tiếp.</article></section><p class="notice">Mỗi khách nhận 01 phần quà trong suốt chương trình. Quà tặng tùy tình trạng còn tại booth.<br>Check-in là đăng ký có mặt qua form, không yêu cầu đăng bài Facebook. Áp dụng đến khi hết quà.</p></main>
 <div class="admin hidden" id="admin"><h1 style="font-size:36px">Quầy nhận quà Rocky</h1><p>Tra cứu số điện thoại · Kiểm tra like · Xác nhận phát quà</p><div class="form-card"><input id="admin-pin" type="password" placeholder="Mã truy cập nội bộ (mặc định: 1234)"><button class="secondary" id="login">Mở bảng theo dõi</button><div id="dashboard" class="hidden"><input id="staff" placeholder="Tên nhân sự xác nhận" maxlength="80"><input id="search" placeholder="Tìm theo số điện thoại"><button id="refresh">Làm mới</button><button id="csv">Xuất CSV</button><p id="stats"></p><div id="table"></div><h3>Cấu hình Google Sheet</h3><p style="font-size:11px;color:#5f7871;margin:6px 0;line-height:1.6">Bảng tính: <a href="https://docs.google.com/spreadsheets/d/1qmJmkqoiD5aboxQPj_r6CqTSvIBTdP_gXhzZ5iEtu9U/edit?gid=0#gid=0" target="_blank" style="color:var(--teal);text-decoration:underline;font-weight:600">Mở Google Sheet ↗</a><br>Dán URL Web App từ Google Apps Script (đuôi /exec) để đồng bộ trực tiếp:</p><input id="sheet-url" placeholder="https://script.google.com/macros/s/.../exec"><button id="save-sheet" class="secondary" style="margin-top:6px;width:auto;padding:10px 18px">Lưu kết nối Google Sheet</button><p id="sheet-status" style="font-size:11px;color:var(--teal);margin-top:6px"></p><h3>Cấu hình chương trình</h3><input id="pageurl" placeholder="Link fanpage Rocky chính thức"><button id="save-config">Lưu fanpage</button><h3>Bảng hướng dẫn & mã QR</h3><p>Dán link công khai sau khi mở quyền truy cập cho khách.</p><input id="qr-url" placeholder="https://..."><button id="qr-create">Tạo QR và bảng hướng dẫn</button><div id="poster"><h2>CHECK-IN ROCKY VOS</h2><h3>Like fanpage, nhận ngay nước hoặc móc khóa!</h3><div id="qr"></div><p>1. Quét mã và điền form<br>2. Like fanpage Rocky<br>3. Xuất trình xác nhận tại quầy</p><small>Mỗi khách nhận 01 phần quà trong suốt chương trình.<br>Quà tặng tùy tình trạng còn tại booth.</small></div><button onclick="print()">In bảng hướng dẫn</button></div><p class="error" id="admin-error"></p></div></div><footer><span>© 2026 ROCKY · CANADA OPTICIANS</span><span>HẸN GẶP BẠN TẠI VOS 2026 <span style="color:#e94343">✦</span></span></footer>
 <script>
-const $=s=>document.querySelector(s);let config={};let adminPin='',rows=[];
+const $=s=>document.querySelector(s);let config={fanpage:'https://www.facebook.com/rockylensvietnam'};let adminPin='',rows=[];
 let sheetScriptUrl=localStorage.getItem('rocky_sheet_script_url')||'https://script.google.com/macros/s/AKfycbwXObO1iJit5YGwEDO3rvBvbzSmRapkbYsflumCboaR-q5Bz-vmRwl9FuZ8eNxVgwRYdQ/exec';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
@@ -121,10 +121,7 @@ function success(r){
   $('#success').classList.remove('hidden');
   $('#ticket').textContent=r.code||'RK-OK';
   $('#guest').textContent=r.name+' · '+r.phone;
-  $('#fanpage').href=config.fanpage||'#';
-  if(!config.fanpage){
-    $('#fanpage').onclick=e=>{e.preventDefault();$('#fan-note').textContent='Vui lòng nhờ nhân sự tại booth mở fanpage Rocky chính thức để bạn like và nhận quà.'}
-  }
+  $('#fanpage').href=config.fanpage||'https://www.facebook.com/rockylensvietnam';
   $('#checkin').scrollIntoView({behavior:'smooth',block:'start'})
 }
 
@@ -168,6 +165,7 @@ async function load(){
     $('#login').classList.add('hidden');
     draw();
     if($('#sheet-url')) $('#sheet-url').value=sheetScriptUrl;
+    if($('#pageurl')) $('#pageurl').value=config.fanpage||'https://www.facebook.com/rockylensvietnam';
     $('#admin-error').textContent='';
   }catch(e){
     $('#admin-error').textContent=e.message;

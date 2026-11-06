@@ -29,7 +29,7 @@ function doGet(e) {
     return handleRecords();
   }
   if (p && p.action === 'config') {
-    const fanpage = PropertiesService.getScriptProperties().getProperty('fanpage') || 'https://www.facebook.com';
+    const fanpage = PropertiesService.getScriptProperties().getProperty('fanpage') || 'https://www.facebook.com/rockylensvietnam';
     return jsonResponse({ fanpage: fanpage });
   }
   return jsonResponse({
@@ -143,7 +143,7 @@ function doPost(e) {
         PropertiesService.getScriptProperties().setProperty('fanpage', String(data.fanpage).trim());
         return jsonResponse({ success: true, fanpage: data.fanpage });
       }
-      const fanpage = PropertiesService.getScriptProperties().getProperty('fanpage') || 'https://www.facebook.com';
+      const fanpage = PropertiesService.getScriptProperties().getProperty('fanpage') || 'https://www.facebook.com/rockylensvietnam';
       return jsonResponse({ fanpage: fanpage });
     }
 
