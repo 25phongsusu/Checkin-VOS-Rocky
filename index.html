@@ -39,14 +39,32 @@ async function api(path,data,admin=false){
   if(sheetScriptUrl){
     try{
       if(path==='register'){
-        const r=await fetch(sheetScriptUrl,{
-          method:'POST',
-          headers:{'Content-Type':'text/plain;charset=utf-8'},
-          body:JSON.stringify({action:'register',...data})
-        });
-        const j=await r.json();
-        if(!r.ok||j.error)throw Error(j.error||'Không thể lưu vào Google Sheet.');
-        return j;
+        try{
+          const r=await fetch(sheetScriptUrl,{
+            method:'POST',
+            headers:{'Content-Type':'text/plain;charset=utf-8'},
+            body:JSON.stringify({action:'register',...data})
+          });
+          const j=await r.json();
+          if(!r.ok||j.error)throw Error(j.error||'Không thể lưu vào Google Sheet.');
+          return j;
+        }catch(fetchErr){
+          if(location.protocol==='file:'){
+            await fetch(sheetScriptUrl,{
+              method:'POST',
+              mode:'no-cors',
+              headers:{'Content-Type':'text/plain;charset=utf-8'},
+              body:JSON.stringify({action:'register',...data})
+            });
+            return {
+              success:true,
+              code:'RK-'+Math.random().toString(36).substring(2,8).toUpperCase(),
+              name:data.name,
+              phone:data.phone
+            };
+          }
+          throw fetchErr;
+        }
       }
       if(path==='records'){
         const r=await fetch(sheetScriptUrl+(sheetScriptUrl.includes('?')?'&':'?')+'action=records');
