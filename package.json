@@ -1,0 +1,8 @@
+{
+  "name": "rocky-vos-checkin",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  }
+}
